@@ -1,24 +1,32 @@
-usecaseDiagram
-    actor User as "System User"
-    actor API as "NBP API"
+```mermaid
+flowchart LR
+    %% Aktorzy
+    User((System User))
+    API((NBP API))
 
-    package "Currency Exchange Analyzer" {
-        usecase UC1 as "Select Parameters (Currency, Time Period, Analysis Type)"
-        usecase UC2 as "Calculate Session Trends (Growth, Drop, No-change)"
-        usecase UC3 as "Calculate Statistical Measures (Median, Mode, SD, CV)"
-        usecase UC4 as "Generate Change Distribution Histogram"
-        usecase UC5 as "Fetch Exchange Rate Data"
-        usecase UC6 as "Display Results in Console"
-    }
+    %% Granica systemu
+    subgraph System [Currency Exchange Analyzer]
+        direction TB
+        UC1([Select Parameters])
+        UC2([Calculate Session Trends])
+        UC3([Calculate Statistical Measures])
+        UC4([Generate Change Distribution])
+        UC5([Fetch Exchange Rate Data])
+        UC6([Display Results in Console])
+    end
 
-    User --> UC1
-    User --> UC2
-    User --> UC3
-    User --> UC4
-    User --> UC6
+    %% Połączenia między aktorem a systemem
+    User --- UC1
+    User --- UC2
+    User --- UC3
+    User --- UC4
+    User --- UC6
 
-    UC2 ..> UC5 : <<include>>
-    UC3 ..> UC5 : <<include>>
-    UC4 ..> UC5 : <<include>>
+    %% Relacje typu include (muszą pobrać dane)
+    UC2 -. "<<include>>" .-> UC5
+    UC3 -. "<<include>>" .-> UC5
+    UC4 -. "<<include>>" .-> UC5
 
-    UC5 <-- API
+    %% Zewnętrzne API
+    UC5 --- API
+```
