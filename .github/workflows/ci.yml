@@ -4,7 +4,7 @@ name: CI/CD Pipeline
 on:
   push:
     branches:
-      - main
+      - master
       - develop
       - 'release/**'
 
@@ -37,7 +37,7 @@ jobs:
   # ==========================================
   cd:
     needs: ci # 1. Czekamy aż testy przejdą...
-    if: github.ref == 'refs/heads/main' # 2. KAGANIEC: Odpal tylko dla gałęzi main!
+    if: github.ref == 'refs/heads/master' # 2. KAGANIEC: Odpal tylko dla gałęzi main!
     runs-on: windows-latest
     permissions:
       contents: write
