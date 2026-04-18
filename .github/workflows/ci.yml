@@ -1,21 +1,23 @@
 name: CI/CD Pipeline
 
-# Odpalamy potok po każdym pushu na main, develop i gałęzie release
 on:
   push:
     branches:
       - master
       - develop
-      - 'release/**'
+      - release
+    tags:               # 1. ZMIANA: Dodajemy nasłuchiwanie na tagi!
+      - 'v*'
   pull_request:
     branches:
       - master
       - develop
-      - 'release/**'
+      - release
 
 jobs:
   # ==========================================
-  # 1. CI - TESTY I LINTING (Działa wszędzie!)
+  # 1. CI - TESTY I LINTING
+  # (Zadziała i dla zwykłych commitów, i dla tagów)
   # ==========================================
   ci:
     runs-on: ubuntu-latest
@@ -38,30 +40,18 @@ jobs:
         run: PYTHONPATH=. pytest tests/
 
   # ==========================================
-  # 2. CD - BUDOWANIE EXE (Działa TYLKO na main!)
+  # 2. CD - BUDOWANIE EXE
   # ==========================================
   cd:
-    needs: ci # 1. Czekamy aż testy przejdą...
-    if: github.ref == 'refs/heads/master' # 2. KAGANIEC: Odpal tylko dla gałęzi main!
+    needs: ci
+    # 2. ZMIANA KAGAŃCA: Odpal tylko wtedy, gdy akcję wywołał push TAGA (np. v1.0.0)
+    if: startsWith(github.ref, 'refs/tags/v')
     runs-on: windows-latest
     permissions:
       contents: write
 
     steps:
       - uses: actions/checkout@v4
-
-      - name: Odczytaj wersję z pliku
-        id: version_reader
-        shell: bash
-        run: |
-          # Jeśli z jakiegoś powodu nie masz pliku, domyślnie wrzuci 'latest'
-          if [ -f version.txt ]; then
-            VERSION=$(cat version.txt)
-          else
-            VERSION="latest"
-          fi
-          echo "Znaleziona wersja: $VERSION"
-          echo "app_version=$VERSION" >> $GITHUB_OUTPUT
 
       - uses: actions/setup-python@v5
         with:
@@ -76,11 +66,12 @@ jobs:
       - name: Budowanie pliku .exe
         run: pyinstaller --onefile main.py
 
+      # 3. ZMIANA RELEASE'U: Używamy wbudowanej zmiennej z nazwą taga
       - name: Publikacja na GitHub Releases
         uses: softprops/action-gh-release@v2
         with:
-          # Podpinamy zmienną z odczytaną wersją
-          tag_name: v${{ steps.version_reader.outputs.app_version }}
-          name: Wydanie ${{ steps.version_reader.outputs.app_version }}
+          # github.ref_name przechowuje nazwę wysłanego taga, np. "v1.0.0"
+          tag_name: ${{ github.ref_name }}
+          name: Wydanie ${{ github.ref_name }}
           files: dist/main.exe
           generate_release_notes: true
