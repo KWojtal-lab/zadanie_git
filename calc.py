@@ -35,3 +35,7 @@ def sqrt(a: float) -> float:
     if a < 0:
         raise ValueError("Cannot take the square root of a negative number.")
     return a ** 0.5
+
+def pow(a: float, b: float) -> float:
+    """Return a raised to the power of b."""
+    return a ** b
