@@ -25,3 +25,13 @@ def divide(a: float, b: float) -> float:
     if b == 0:
         raise ZeroDivisionError("Cannot divide by zero.")
     return a / b
+
+def sqrt(a: float) -> float:
+    """Return the square root of a number.
+
+    Raises:
+        ValueError: If a is negative.
+    """
+    if a < 0:
+        raise ValueError("Cannot take the square root of a negative number.")
+    return a ** 0.5
